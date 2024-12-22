@@ -77,6 +77,7 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
 
     # judge model type
     model_type = config.model_type
+    print(f'@tcm: In load_pretrained_model: model_type: {model_type}')
 
     # judge pretrain/finetune
     try:
