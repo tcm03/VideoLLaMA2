@@ -163,6 +163,7 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
         mm_projector_weights = load_mm_projector(model_path, token=token)
         model.load_state_dict(mm_projector_weights, strict=False)
     elif 'videollama2' in model_type:
+        print(f'@tcm: In load_pretrained_model: videollama2')
         # NOTE: SFT model loading
         tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False, token=token)
 
