@@ -114,9 +114,9 @@ class Videollama2Qwen2ForCausalLM(Qwen2ForCausalLM, Videollama2MetaForCausalLM):
             raise NotImplementedError("`inputs_embeds` is not supported")
 
         print(f'@tcm: Videollama2Qwen2ForCausalLM.generate()')
-        if inputs:
+        if inputs is not None:
             print(f'@tcm: inputs.shape: {inputs.shape}')
-        if images:
+        if images is not None:
             print(f'@tcm: images.shape: {images.shape}')
 
         if images is not None:
