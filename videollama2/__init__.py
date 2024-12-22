@@ -53,6 +53,7 @@ def mm_infer(image_or_video, instruct, model, tokenizer, modal='video', **kwargs
     else:
         raise ValueError(f"Unsupported modal: {modal}")
 
+    print('before Vision Preprocess')
     # 1. vision preprocess (load & transform image or video).
     if modal == 'text':
         tensor = None
@@ -60,6 +61,7 @@ def mm_infer(image_or_video, instruct, model, tokenizer, modal='video', **kwargs
         tensor = image_or_video.half().cuda()
         tensor = [(tensor, modal)]
 
+    print('before Text Preprocess')
     # 2. text preprocess (tag process & generate prompt).
     if isinstance(instruct, str):
         message = [{'role': 'user', 'content': modal_token + '\n' + instruct}]
@@ -86,6 +88,7 @@ def mm_infer(image_or_video, instruct, model, tokenizer, modal='video', **kwargs
     input_ids = tokenizer_multimodal_token(prompt, tokenizer, modal_token, return_tensors='pt').unsqueeze(0).long().cuda()
     attention_masks = input_ids.ne(tokenizer.pad_token_id).long().cuda()
 
+    print('before Generate response')
     # 3. generate response according to visual signals and prompts. 
     keywords = [tokenizer.eos_token]
     stopping_criteria = KeywordsStoppingCriteria(keywords, tokenizer, input_ids)
@@ -94,7 +97,8 @@ def mm_infer(image_or_video, instruct, model, tokenizer, modal='video', **kwargs
     temperature = kwargs.get('temperature', 0.2 if do_sample else 0.0)
     top_p = kwargs.get('top_p', 0.9)
     max_new_tokens = kwargs.get('max_new_tokens', 2048)
-
+    
+    print('before model generation')
     with torch.inference_mode():
         output_ids = model.generate(
             input_ids,
