@@ -117,7 +117,7 @@ class Videollama2Qwen2ForCausalLM(Qwen2ForCausalLM, Videollama2MetaForCausalLM):
         if inputs is not None:
             print(f'@tcm: inputs.shape: {inputs.shape}')
         if images is not None:
-            print(f'@tcm: images.shape: {images.shape}')
+            print(f'@tcm: len(images): {len(images)}')
 
         if images is not None:
             (
