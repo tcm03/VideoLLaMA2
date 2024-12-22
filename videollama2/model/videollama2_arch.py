@@ -153,6 +153,8 @@ class Videollama2MetaForCausalLM(ABC):
             video_features = self.get_model().mm_projector(frames_features)
         # *********** time  ************
         elif "tc_connector" in self.config.mm_projector_type or "tp_connector" in self.config.mm_projector_type:
+            print(f'frames_features.shape: {frames_features.shape}')
+            print(f'frames_features.device: {frames_features.device}')
             video_features = self.get_model().mm_projector(frames_features)
         else:
             raise Exception(f"Unsupported projector type {self.config.mm_projector_type}!!!")

@@ -202,6 +202,8 @@ class STCConnector(nn.Module):
 
         x = einops.rearrange(x, "b d t h w -> (b t) d h w")
         # 1. the first stage of the adapter
+        print(f'x.shape: {x.shape}')
+        print(f'x.device: {x.device}')
         x = self.s1(x)
         x = einops.rearrange(x, "(b t) d h w -> b d t h w", t=t)
         # 2. downsampler
