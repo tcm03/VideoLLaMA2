@@ -119,8 +119,13 @@ class Videollama2Qwen2ForCausalLM(Qwen2ForCausalLM, Videollama2MetaForCausalLM):
         if inputs is not None:
             print(f'@tcm: inputs.shape: {inputs.shape}')
         if images is not None:
-            # [(tensor, modal)]
-            print(f'@tcm: image_or_video.shape: {images[0][0].shape}')
+            if isinstance(images, list) and len(images) == 1:
+                # [(tensor, modal)]
+                print(f'@tcm: image_or_video.shape: {images[0][0].shape}')
+            elif isinstance(images, dict):
+                # tensor = {k: v.half().cuda() for k, v in image_or_video.items()}
+                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): images["video"].shape: {images["video"].shape}')
+                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): images["audio"].shape: {images["audio"].shape}')
 
         if images is not None:
             (
