@@ -175,6 +175,7 @@ class Videollama2MetaForCausalLM(ABC):
         frames = einops.rearrange(data_batch, 'b t c h w -> (b t) c h w')
         frames_features = self.get_model().get_vision_tower()(frames)
         frames_features = einops.rearrange(frames_features, '(b t) n h -> b t n h', b = batch_size)
+        print(f'@tcm: In Videollama2MetaForCausalLM::encode_images_or_videos(): frames_features.shape: {frames_features.shape}')
 
         return self.temporal_aggregator(frames_features)
 
@@ -198,6 +199,7 @@ class Videollama2MetaForCausalLM(ABC):
         # *********** time  ************
         elif "tc_connector" in self.config.mm_projector_type or "tp_connector" in self.config.mm_projector_type:
             video_features = self.get_model().mm_projector(frames_features)
+            print(f'@tcm: In Videollama2MetaForCausalLM::temporal_aggregator(): video_features.shape: {video_features.shape}')
         else:
             raise Exception(f"Unsupported projector type {self.config.mm_projector_type}!!!")
 

@@ -68,6 +68,7 @@ def mm_infer(image_or_video, instruct, model, tokenizer, modal='video', **kwargs
     # 2. text preprocess (tag process & generate prompt).
     if isinstance(instruct, str):
         message = [{'role': 'user', 'content': modal_token + '\n' + instruct}]
+        print(f'@tcm: In mm_infer(): message: {message}')
     elif isinstance(instruct, list):
         message = copy.deepcopy(instruct)
         message[0]['content'] = modal_token + '\n' + message[0]['content']
@@ -82,8 +83,10 @@ def mm_infer(image_or_video, instruct, model, tokenizer, modal='video', **kwargs
             """If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.\n<</SYS>>""")
             }
         ]
+        print(f'@tcm: In mm_infer(): system_message: {system_message}')
     else:
         system_message = []
+        print(f'@tcm: In mm_infer(): no system message')
 
     message = system_message + message
     prompt = tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True)
