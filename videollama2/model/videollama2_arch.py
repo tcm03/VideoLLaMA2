@@ -131,6 +131,7 @@ class Videollama2MetaForCausalLM(ABC):
         frames = einops.rearrange(data_batch, 'b t c h w -> (b t) c h w')
         frames_features = self.get_model().get_vision_tower()(frames)
         frames_features = einops.rearrange(frames_features, '(b t) n h -> b t n h', b = batch_size)
+        print(f'@tcm: In Videollama2MetaForCausalLM::encode_images_or_videos(): frames_features.shape: {frames_features.shape}')
 
         return self.temporal_aggregator(frames_features)
 
@@ -156,8 +157,8 @@ class Videollama2MetaForCausalLM(ABC):
             video_features = self.get_model().mm_projector(frames_features)
         # *********** time  ************
         elif "tc_connector" in self.config.mm_projector_type or "tp_connector" in self.config.mm_projector_type:
-            print(f'@tcm: frames_features.shape: {frames_features.shape}')
             video_features = self.get_model().mm_projector(frames_features)
+            print(f'@tcm: In Videollama2MetaForCausalLM::temporal_aggregator(): video_features.shape: {video_features.shape}')
         else:
             raise Exception(f"Unsupported projector type {self.config.mm_projector_type}!!!")
 
@@ -166,7 +167,7 @@ class Videollama2MetaForCausalLM(ABC):
     def prepare_inputs_labels_for_multimodal(
         self, input_ids, attention_mask, past_key_values, labels, images
     ):
-        print(f'@tcm: Videollama2MetaForCausalLM.prepare_inputs_labels_for_multimodal()')
+        # print(f'@tcm: Videollama2MetaForCausalLM.prepare_inputs_labels_for_multimodal()')
         vision_tower = self.get_vision_tower()
         # NOTE: text-only situation
         if vision_tower is None or images is None or input_ids.shape[1] == 1:
@@ -174,7 +175,6 @@ class Videollama2MetaForCausalLM(ABC):
             #    attention_mask = torch.ones((attention_mask.shape[0], past_key_values[-1][-1].shape[-2] + 1), dtype=attention_mask.dtype, device=attention_mask.device)
             return input_ids, attention_mask, past_key_values, None, labels
 
-        print(f'@tcm: before encode_images_or_videos()')
         mm_features = self.encode_images_or_videos(images)
 
         new_input_embeds = []

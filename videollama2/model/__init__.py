@@ -189,6 +189,7 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
         vision_tower.to(device=device, dtype=torch.float16)
         # NOTE: videollama2 adopts the same processor for processing image and video.
         processor = vision_tower.image_processor
+        print(f'@tcm: In load_pretrained_model: vision_tower.image_processor: {processor}')
 
     if hasattr(model.config, "max_sequence_length"):
         context_len = model.config.max_sequence_length

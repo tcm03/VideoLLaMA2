@@ -117,7 +117,8 @@ class Videollama2Qwen2ForCausalLM(Qwen2ForCausalLM, Videollama2MetaForCausalLM):
         if inputs is not None:
             print(f'@tcm: inputs.shape: {inputs.shape}')
         if images is not None:
-            print(f'@tcm: len(images): {len(images)}')
+            # [(tensor, modal)]
+            print(f'@tcm: image_or_video.shape: {images[0][0].shape}')
 
         if images is not None:
             (
@@ -136,6 +137,7 @@ class Videollama2Qwen2ForCausalLM(Qwen2ForCausalLM, Videollama2MetaForCausalLM):
         else:
             inputs_embeds = self.get_model().embed_tokens(inputs)
 
+        # inputs_embeds: [1, 704, 3584]
         print(f'@tcm: before Qwen2ForCaualLM.generate()')
         print(f'@tcm: inputs_embeds.shape: {inputs_embeds.shape}')
         return super().generate(
