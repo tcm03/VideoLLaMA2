@@ -144,8 +144,13 @@ class Videollama2Qwen2ForCausalLM(Qwen2ForCausalLM, Videollama2MetaForCausalLM):
                 labels=None,
                 images=images
             )
-            print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): After prepare_inputs_labels_for_multimodal: \
-                 input_ids.shape: {input_ids.shape}, attention_mask.shape: {attention_mask.shape}, inputs_embeds.shape: {inputs_embeds.shape}')
+            print('@tcm: In Videollama2Qwen2ForCausalLM.generate(): After prepare_inputs_labels_for_multimodal: ')
+            if input_ids is not None:
+                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): input_ids.shape: {input_ids.shape}')
+            if attention_mask is not None:
+                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): attention_mask.shape: {attention_mask.shape}')
+            if inputs_embeds is not None:
+                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): inputs_embeds.shape: {inputs_embeds.shape}')
         else:
             inputs_embeds = self.get_model().embed_tokens(inputs)
 
