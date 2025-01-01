@@ -112,6 +112,7 @@ def process_image(image_path, processor, aspect_ratio='pad'):
 
 
 def frame_sample(duration, mode='uniform', num_frames=None, fps=None):
+    print(f'@tcm: In frame_sample(): duration: {duration}, mode: {mode}, num_frames: {num_frames}, fps: {fps}')
     if mode == 'uniform':
         assert num_frames is not None, "Number of frames must be provided for uniform sampling."
         # NOTE: v1 version
@@ -126,6 +127,7 @@ def frame_sample(duration, mode='uniform', num_frames=None, fps=None):
             # Append the middle index of the segment to the list
             frame_ids.append((start + end) / 2)
 
+        print(f'@tcm: In frame_sample(): returned frame ids: {np.round(np.array(frame_ids) + 1e-6).astype(int)}')
         return np.round(np.array(frame_ids) + 1e-6).astype(int)
         # NOTE: v0 version
         # return np.linspace(0, duration-1, num_frames, dtype=int)
@@ -240,6 +242,7 @@ def process_audio_from_video(audio_path, clip_duration, device="cpu", num_mel_bi
 
 
 def process_video(video_path, processor, s=None, e=None, aspect_ratio='pad', num_frames=NUM_FRAMES, va=False):
+    print(f'@tcm: In process_video(): video_path: {video_path}, aspect_ratio: {aspect_ratio}')
     if isinstance(video_path, str):
         if s is not None and e is not None:
             s = s if s >= 0. else 0.
@@ -264,7 +267,9 @@ def process_video(video_path, processor, s=None, e=None, aspect_ratio='pad', num
             vreader = VideoReader(video_path, ctx=cpu(0), num_threads=1)
 
             fps = vreader.get_avg_fps()
+            print(f'@tcm: In process_video(): avg_fps: {fps}')
             num_frames_of_video = len(vreader)
+            print(f'@tcm: In process_video(): num_frames_of_video: {num_frames_of_video}')
 
         # 2. Determine frame range & Calculate frame indices
         f_start = 0                       if s is None else max(int(s * fps) - 1, 0)
@@ -272,11 +277,13 @@ def process_video(video_path, processor, s=None, e=None, aspect_ratio='pad', num
         frame_indices = list(range(f_start, f_end + 1))
 
         duration = len(frame_indices)
+        print(f'@tcm: In process_video(): duration=len(frame_indices): {duration}')
         # 3. Sampling frame indices 
         if num_frames is None:
             sampled_frame_indices = [frame_indices[i] for i in frame_sample(duration, mode='fps', fps=fps)]
         else:
             sampled_frame_indices = [frame_indices[i] for i in frame_sample(duration, mode='uniform', num_frames=num_frames)]
+            print(f'@tcm: In process_video(): sampled_frame_indices: {sampled_frame_indices}')
 
         # 4. Acquire frame data
         if os.path.isdir(video_path): 

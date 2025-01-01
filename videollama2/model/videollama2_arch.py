@@ -224,7 +224,6 @@ class Videollama2MetaForCausalLM(ABC):
             # [dict(”, audio), "video"]
 
             print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): with audio_tower and vision_tower')
-            print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): images: {images}')
 
             X_video = []
             X_audio = []

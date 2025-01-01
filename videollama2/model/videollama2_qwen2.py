@@ -126,8 +126,8 @@ class Videollama2Qwen2ForCausalLM(Qwen2ForCausalLM, Videollama2MetaForCausalLM):
                 print(f'@tcm: tensor.shape: {tensor.shape}')
             elif isinstance(tensor, dict):
                 # tensor = {k: v.half().cuda() for k, v in image_or_video.items()}
-                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): images["video"].shape: {tensor["video"].shape}')
-                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): images["audio"].shape: {tensor["audio"].shape}')
+                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): tensor["video"].shape: {tensor["video"].shape}')
+                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): tensor["audio"].shape: {tensor["audio"].shape}')
 
         if images is not None:
             (
