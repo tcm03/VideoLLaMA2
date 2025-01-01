@@ -223,6 +223,9 @@ class Videollama2MetaForCausalLM(ABC):
             # [tensor, "video"]
             # [dict(”, audio), "video"]
 
+            print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): with audio_tower and vision_tower')
+            print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): images: {images}')
+
             X_video = []
             X_audio = []
 
@@ -248,6 +251,7 @@ class Videollama2MetaForCausalLM(ABC):
                         raise NotImplementedError
 
             if len(X_audio) > 0:
+                print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): len(X_audio): {len(X_audio)}')
                 Xa_features = torch.cat(X_audio, dim=0)
                 audio_padding_mask = torch.zeros(Xa_features.shape, device=self.device).bool()
                 audio_embedding, T, F = self.get_model().get_audio_tower().extract_features(Xa_features, padding_mask=audio_padding_mask, feature_only=True)
@@ -255,6 +259,7 @@ class Videollama2MetaForCausalLM(ABC):
                 Xa_features = Xa_features.view(len(X_audio), -1, Xa_features.shape[-1])
 
             if len(X_video) > 0:
+                print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): len(X_video): {len(X_video)}')
                 X_features = self.encode_images_or_videos(X_video)
 
             mm_features = []
@@ -272,6 +277,7 @@ class Videollama2MetaForCausalLM(ABC):
                     idx_v += 1
                 else:
                     raise NotImplementedError
+            print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): len(mm_features): {len(mm_features)}')
         else:
             data_batch = []
             for i, (data, modal) in enumerate(images):
@@ -286,6 +292,7 @@ class Videollama2MetaForCausalLM(ABC):
         new_input_embeds = []
         new_labels = [] if labels is not None else None
         cur_mm_idx = 0
+        print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): len(input_ids): {len(input_ids)}')
         # replace image/video/audio tokens with pre-computed embeddings
         for batch_idx, cur_input_ids in enumerate(input_ids):
             num_multimodals = sum((cur_input_ids == mm_token_idx).sum() for mm_token_idx in MODAL_INDEX_MAP.values())
