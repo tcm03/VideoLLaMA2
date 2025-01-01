@@ -243,6 +243,8 @@ def process_audio_from_video(audio_path, clip_duration, device="cpu", num_mel_bi
 
 def process_video(video_path, processor, s=None, e=None, aspect_ratio='pad', num_frames=NUM_FRAMES, va=False):
     print(f'@tcm: In process_video(): video_path: {video_path}, aspect_ratio: {aspect_ratio}')
+    # @tcm: visualize selected frames
+    selected_frames = []
     if isinstance(video_path, str):
         if s is not None and e is not None:
             s = s if s >= 0. else 0.
@@ -292,6 +294,7 @@ def process_video(video_path, processor, s=None, e=None, aspect_ratio='pad', num
             video_data = [Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_RGBA2RGB)) for idx, frame in enumerate(gif_reader) if idx in sampled_frame_indices]
         else:
             video_data = [Image.fromarray(frame) for frame in vreader.get_batch(sampled_frame_indices).asnumpy()]
+            selected_frames = [Image.fromarray(frame) for frame in vreader.get_batch(sampled_frame_indices).asnumpy()]
 
     elif isinstance(video_path, np.ndarray):
         video_data = [Image.fromarray(f) for f in video_path]
@@ -304,6 +307,7 @@ def process_video(video_path, processor, s=None, e=None, aspect_ratio='pad', num
     else:
         raise ValueError(f"Unsupported video path type: {type(video_path)}")
 
+    # @tcm: append black (0s) frames if the video is shorter than num_frames
     while num_frames is not None and len(video_data) < num_frames:
         video_data.append(Image.fromarray(np.zeros((*video_data[-1].size, 3), dtype=np.uint8)))
 
@@ -323,7 +327,7 @@ def process_video(video_path, processor, s=None, e=None, aspect_ratio='pad', num
         audio = process_audio_from_video(video_path, video_duration_seconds)
         video = {'video': video, 'audio': audio}
         
-    return video
+    return video, selected_frames
 
 def process_video_old(video_path, processor, aspect_ratio='pad', num_frames=NUM_FRAMES, image_grid=False, sample_scheme='uniform'):
     def frame_sample(duration, mode='uniform', local_fps=None):
