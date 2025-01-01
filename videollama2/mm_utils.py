@@ -244,7 +244,7 @@ def process_audio_from_video(audio_path, clip_duration, device="cpu", num_mel_bi
 def process_video(video_path, processor, s=None, e=None, aspect_ratio='pad', num_frames=NUM_FRAMES, va=False):
     print(f'@tcm: In process_video(): video_path: {video_path}, aspect_ratio: {aspect_ratio}')
     # @tcm: manually increase num_frames
-    num_frames = 38
+    num_frames = 100
     # @tcm: visualize selected frames
     selected_frames = []
     if isinstance(video_path, str):
