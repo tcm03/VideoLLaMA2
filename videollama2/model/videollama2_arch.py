@@ -174,7 +174,7 @@ class Videollama2MetaForCausalLM(ABC):
 
         frames = einops.rearrange(data_batch, 'b t c h w -> (b t) c h w')
         frames_features = self.get_model().get_vision_tower()(frames)
-        frames_features = einops.rearrange(frames_features, '(b t) n h -> b t n h', b = batch_size)
+        frames_features = einops.rearrange(frames_features, '(b t) n h -> b t n h', b = batch_size) # [1, #frames, #patches=729, 1152]
         print(f'@tcm: In Videollama2MetaForCausalLM::encode_images_or_videos(): frames_features.shape: {frames_features.shape}')
 
         return self.temporal_aggregator(frames_features)
@@ -198,7 +198,7 @@ class Videollama2MetaForCausalLM(ABC):
             video_features = self.get_model().mm_projector(frames_features)
         # *********** time  ************
         elif "tc_connector" in self.config.mm_projector_type or "tp_connector" in self.config.mm_projector_type:
-            video_features = self.get_model().mm_projector(frames_features)
+            video_features = self.get_model().mm_projector(frames_features) # [1, 2704, 3584]
             print(f'@tcm: In Videollama2MetaForCausalLM::temporal_aggregator(): video_features.shape: {video_features.shape}')
         else:
             raise Exception(f"Unsupported projector type {self.config.mm_projector_type}!!!")
@@ -255,13 +255,13 @@ class Videollama2MetaForCausalLM(ABC):
                 audio_padding_mask = torch.zeros(Xa_features.shape, device=self.device).bool()
                 audio_embedding, T, F = self.get_model().get_audio_tower().extract_features(Xa_features, padding_mask=audio_padding_mask, feature_only=True)
                 Xa_features = self.get_model().mm_projector_a(audio_embedding)
-                Xa_features = Xa_features.view(len(X_audio), -1, Xa_features.shape[-1])
+                Xa_features = Xa_features.view(len(X_audio), -1, Xa_features.shape[-1]) # [1, 1496, 3584]
                 print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): Xa_features.shape: {Xa_features.shape}')
 
             # X_video = [(video_tensor, "video")]
             if len(X_video) > 0:
                 print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): len(X_video): {len(X_video)}')
-                X_features = self.encode_images_or_videos(X_video)
+                X_features = self.encode_images_or_videos(X_video) # [1, 2704, 3584]
                 print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): X_features.shape: {X_features.shape}')
 
             mm_features = []
@@ -279,6 +279,7 @@ class Videollama2MetaForCausalLM(ABC):
                     idx_v += 1
                 else:
                     raise NotImplementedError
+            # mm_features.shape: [4200, 3584]
             print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): len(mm_features): {len(mm_features)}')
             print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): mm_features[0].shape: {mm_features[0].shape}')
         else:
@@ -298,6 +299,7 @@ class Videollama2MetaForCausalLM(ABC):
         print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): len(input_ids): {len(input_ids)}')
         # replace image/video/audio tokens with pre-computed embeddings
         for batch_idx, cur_input_ids in enumerate(input_ids):
+            # cur_input_ids.shape: torch.Size([29])
             print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): batch_idx: {batch_idx}')
             print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): cur_input_ids.shape: {cur_input_ids.shape}')
             num_multimodals = sum((cur_input_ids == mm_token_idx).sum() for mm_token_idx in MODAL_INDEX_MAP.values())
@@ -320,16 +322,16 @@ class Videollama2MetaForCausalLM(ABC):
                 cur_new_labels = []
                 assert cur_labels.shape == cur_input_ids.shape
 
-            mm_token_indices = torch.where(sum([cur_input_ids == mm_token_idx for mm_token_idx in MODAL_INDEX_MAP.values()]))[0]
-            print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): type(mm_token_indices): {type(mm_token_indices)}')
-            print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): mm_token_indices: {mm_token_indices}')
+            mm_token_indices = torch.where(sum([cur_input_ids == mm_token_idx for mm_token_idx in MODAL_INDEX_MAP.values()]))[0] # [14]
+            print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): mm_token_indices.shape: {mm_token_indices.shape}')
             while mm_token_indices.numel() > 0:
-                cur_mm_features = mm_features[cur_mm_idx]
-                mm_token_start = mm_token_indices[0]
+                cur_mm_features = mm_features[cur_mm_idx] # shape: [4200, 3584]
+                mm_token_start = mm_token_indices[0] # 14
                 print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): cur_mm_features.shape: {cur_mm_features.shape}')
                 print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): mm_token_start: {mm_token_start}')
 
                 cur_new_input_embeds.append(self.get_model().embed_tokens(cur_input_ids[:mm_token_start]))
+                # self.get_model().embed_tokens(cur_input_ids[:mm_token_start]).shape: [14, 3584]
                 print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): embed_tokens(cur_input_ids[...]).shape: {cur_new_input_embeds[-1].shape}')
                 cur_new_input_embeds.append(cur_mm_features)
                 if labels is not None:
@@ -338,7 +340,7 @@ class Videollama2MetaForCausalLM(ABC):
                     cur_labels = cur_labels[mm_token_start+1:]
 
                 cur_mm_idx += 1
-                cur_input_ids = cur_input_ids[mm_token_start+1:]
+                cur_input_ids = cur_input_ids[mm_token_start+1:] # shape: torch.Size([14])
                 print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): updated cur_input_ids.shape: {cur_input_ids.shape}')
                 mm_token_indices = torch.where(sum([cur_input_ids == mm_token_idx for mm_token_idx in MODAL_INDEX_MAP.values()]))[0]
 
@@ -349,7 +351,7 @@ class Videollama2MetaForCausalLM(ABC):
                     cur_new_labels.append(cur_labels)
             cur_new_input_embeds = [x.to(device=self.device) for x in cur_new_input_embeds]
             # NOTE: one cur_new_input_embeds per each  
-            cur_new_input_embeds = torch.cat(cur_new_input_embeds, dim=0)
+            cur_new_input_embeds = torch.cat(cur_new_input_embeds, dim=0) # shape: [4228, 3584] ((29-1)+4200) for the mm token
             print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): concat cur_new_input_embeds.shape: {cur_new_input_embeds.shape}')
             new_input_embeds.append(cur_new_input_embeds)
             if labels is not None:
@@ -358,7 +360,6 @@ class Videollama2MetaForCausalLM(ABC):
 
         # padding
         if any(x.shape != new_input_embeds[0].shape for x in new_input_embeds):
-            print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): padding')
             max_len = max(x.shape[0] for x in new_input_embeds)
 
             new_input_embeds_align = []
@@ -385,6 +386,7 @@ class Videollama2MetaForCausalLM(ABC):
                 attention_mask = torch.stack(new_attention_mask, dim=0)
                 assert attention_mask.shape == new_labels.shape
         else:
+            print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): no need padding')
             new_input_embeds = torch.stack(new_input_embeds, dim=0)
             if labels is not None:
                 new_labels  = torch.stack(new_labels, dim=0)
@@ -394,5 +396,6 @@ class Videollama2MetaForCausalLM(ABC):
                 attention_mask = torch.cat((new_attn_mask_pad_left, attention_mask), dim=1)
                 assert attention_mask.shape == new_input_embeds.shape[:2]
 
+        # new_input_embeds.shape: [1, 4228, 3584]
         print(f'@tcm: In Videollama2MetaForCausalLM::prepare_inputs_labels_for_multimodal(): final new_input_embeds.shape: {new_input_embeds.shape}')
         return None, attention_mask, past_key_values, new_input_embeds, new_labels
