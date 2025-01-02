@@ -1,0 +1,23 @@
+Video: EnTube/2/0T0-ui462rI.mp4
+
+L4 - Max VRAM: 22.5 GB
+
+num_frames=30
+caption: A woman in a white dress is walking through a garden of yellow flowers. Suddenly, a man in a red shirt and hat appears and starts dancing with her. They are joined by a group of people in colorful outfits, including a person in a lion costume. The scene is set to music and the sound of a cello.
+VRAM: 20.7 GB
+
+num_frames=50
+CUDA out of memory
+
+num_frames=40
+CUDA out of memory
+
+num_frames=38
+caption: The video shows a woman in a white dress standing next to a man in a red and yellow costume. They are surrounded by a group of people in traditional clothing, including a man in a red hat and a woman with long black hair. The scene is set on a street with a lion dancing in the background. The main source of sound in the video is the music playing in the background.
+VRAM: 21.3 GB
+
+A100 - Max VRAM: 40.0 GB
+
+num_frames=100
+caption: The video shows a woman in a white dress standing in front of yellow flowers. She is smiling and holding a cell phone. There are also scenes of people dressed up for the Chinese New Year, including a man in a red costume holding a stick and another man in a red shirt and hat holding a fan. The video also features a group of people in traditional clothing dancing in the street. Additionally, there are shots of a woman in a red dress standing next to a man in a red shirt, as well as a group of people standing around a red and white lion statue.
+VRAM: 37.0 GB

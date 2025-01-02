@@ -244,7 +244,7 @@ def process_audio_from_video(audio_path, clip_duration, device="cpu", num_mel_bi
 def process_video(video_path, processor, s=None, e=None, aspect_ratio='pad', num_frames=NUM_FRAMES, va=False):
     print(f'@tcm: In process_video(): video_path: {video_path}, aspect_ratio: {aspect_ratio}')
     # @tcm: manually increase num_frames
-    num_frames = 100
+    num_frames = 32
     # @tcm: visualize selected frames
     selected_frames = []
     if isinstance(video_path, str):
@@ -426,6 +426,8 @@ def tokenizer_multimodal_token(prompt, tokenizer, multimodal_token=DEFAULT_IMAGE
     if multimodal_token_index is None:
         input_ids = tokenizer(prompt, add_special_tokens=False).input_ids
     else:
+        # @tcm: in case there are multiple multimodal tokens in the prompt, it tokenizes each prompt chunk and 
+        # concatenate those chunks with the multimodal token index in an alternative manner
         prompt_chunks = [tokenizer(chunk, add_special_tokens=False).input_ids for idx, chunk in enumerate(prompt.split(multimodal_token))]
 
         input_ids = []
@@ -434,6 +436,9 @@ def tokenizer_multimodal_token(prompt, tokenizer, multimodal_token=DEFAULT_IMAGE
                 input_ids.extend(prompt_chunks[i // 2])
             else:
                 input_ids.append(multimodal_token_index)
+
+        # @tcm: e.g. input_ids (hypothetically, multimodal_token_index=12345)
+        # [12345, <tokens for " Describe this video. ">, 12345, <tokens for " What do you see?">]
 
     if return_tensors is not None:
         if return_tensors == 'pt':

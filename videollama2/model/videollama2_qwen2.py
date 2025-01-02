@@ -111,13 +111,14 @@ class Videollama2Qwen2ForCausalLM(Qwen2ForCausalLM, Videollama2MetaForCausalLM):
         **kwargs,
     ) -> Union[GenerateOutput, torch.LongTensor]:
         position_ids = kwargs.pop("position_ids", None)
-        print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): position_ids: {position_ids}')
+        print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): position_ids: {position_ids}') # None
         attention_mask = kwargs.pop("attention_mask", None)
         if "inputs_embeds" in kwargs:
             raise NotImplementedError("`inputs_embeds` is not supported")
 
         print(f'@tcm: Videollama2Qwen2ForCausalLM.generate()')
         if inputs is not None:
+            # e.g. inputs.shape: [1, 29]
             print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): inputs.shape: {inputs.shape}')
         if images is not None:
             # images: [(tensor, modal)]
@@ -127,8 +128,9 @@ class Videollama2Qwen2ForCausalLM(Qwen2ForCausalLM, Videollama2MetaForCausalLM):
                 print(f'@tcm: tensor.shape: {tensor.shape}')
             elif isinstance(tensor, dict):
                 # tensor = {k: v.half().cuda() for k, v in image_or_video.items()}
-                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): tensor["video"].shape: {tensor["video"].shape}')
-                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): tensor["audio"].shape: {tensor["audio"].shape}')
+                # e.g. with 100 frames
+                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): tensor["video"].shape: {tensor["video"].shape}') # [100, 3, 384, 384]
+                print(f'@tcm: In Videollama2Qwen2ForCausalLM.generate(): tensor["audio"].shape: {tensor["audio"].shape}') # [1, 2998, 128]
 
         if images is not None:
             (
@@ -154,7 +156,8 @@ class Videollama2Qwen2ForCausalLM(Qwen2ForCausalLM, Videollama2MetaForCausalLM):
         else:
             inputs_embeds = self.get_model().embed_tokens(inputs)
 
-        # inputs_embeds: [1, 704 or 2200, 3584]
+        # inputs_embeds.shape: [1, 2200, 3584]
+        # 100 frames: inputs_embeds.shape: [1, 9974, 3584]
         return super().generate(
             position_ids=position_ids,
             attention_mask=attention_mask,

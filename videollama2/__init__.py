@@ -92,6 +92,7 @@ def mm_infer(image_or_video, instruct, model, tokenizer, modal='video', **kwargs
     prompt = tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True)
 
     input_ids = tokenizer_multimodal_token(prompt, tokenizer, modal_token, return_tensors='pt').unsqueeze(0).long().cuda()
+    # @tcm: e.g. input_ids.shape: [1, 29]
     attention_masks = input_ids.ne(tokenizer.pad_token_id).long().cuda()
 
     # 3. generate response according to visual signals and prompts. 
