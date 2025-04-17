@@ -1,0 +1,14 @@
+num_frames=32:
+X_features.shape: [1, 2704, 3584]
+Xa_features.shape: [1, 1496, 3584]
+mm_features.shape: [4200, 3584]
+inputs_embeds.shape: [1, 4228, 3584]
+
+num_frames=64:
+X_features.shape: [1, 5408, 3584]
+Xa_features.shape: [1, 1496, 3584]
+mm_features.shape: [6904, 3584]
+inputs_embeds.shape: [1, 6932, 3584]
+
+=> Within a video, different frame sampling rates lead to different input sizes for the video embedding features, but the audio embedding features remain the same.
+=> Tokens of video feature vector and audio feature vector are concatenated (with same hidden dimension)
